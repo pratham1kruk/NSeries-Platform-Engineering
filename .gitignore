@@ -1,0 +1,4 @@
+PERSONAL_DOCS.md
+.vbc/*
+.vbcignore
+join-command.sh

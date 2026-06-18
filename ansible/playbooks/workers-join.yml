@@ -1,0 +1,17 @@
+---
+- name: Join workers to cluster
+  hosts: workers
+  become: true
+
+  tasks:
+
+    - name: Copy join command to workers
+      copy:
+        src: ~/k8s-aws-project/join-command.sh
+        dest: /tmp/join-command.sh
+        mode: '0755'
+
+    - name: Join cluster
+      command: bash /tmp/join-command.sh
+      args:
+        creates: /etc/kubernetes/kubelet.conf

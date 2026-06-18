@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snapnscrape-scraper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snapnscrape-scraper
+  template:
+    metadata:
+      labels:
+        app: snapnscrape-scraper
+    spec:
+      containers:
+        - name: scraper
+          image: {{ .Values.scraper.image }}:{{ .Values.scraper.tag }}
+          ports:
+            - containerPort: {{ .Values.scraper.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scraper
+spec:
+  selector:
+    app: snapnscrape-scraper
+  ports:
+    - port: {{ .Values.scraper.port }}
+      targetPort: {{ .Values.scraper.port }}

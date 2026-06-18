@@ -1,0 +1,6 @@
+apiVersion: v2
+name: letsnscape
+description: LetsNScrape web scraping application
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

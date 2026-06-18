@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: letsnscape-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: letsnscape-frontend
+  template:
+    metadata:
+      labels:
+        app: letsnscape-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: {{ .Values.frontend.image }}:{{ .Values.frontend.tag }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: letsnscape-frontend
+spec:
+  type: NodePort
+  selector:
+    app: letsnscape-frontend
+  ports:
+    - port: {{ .Values.frontend.port }}
+      targetPort: {{ .Values.frontend.port }}
+      nodePort: {{ .Values.frontend.nodePort }}

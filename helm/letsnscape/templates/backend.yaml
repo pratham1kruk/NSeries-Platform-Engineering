@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: letsnscape-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: letsnscape-backend
+  template:
+    metadata:
+      labels:
+        app: letsnscape-backend
+    spec:
+      containers:
+        - name: backend
+          image: {{ .Values.backend.image }}:{{ .Values.backend.tag }}
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+          env:
+            - name: REDIS_HOST
+              value: {{ .Values.backend.env.redisHost }}
+            - name: REDIS_PORT
+              value: "{{ .Values.backend.env.redisPort }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: letsnscape-backend
+  ports:
+    - port: 3070
+      targetPort: 3070

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: snapnscrape-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snapnscrape-gateway
+  template:
+    metadata:
+      labels:
+        app: snapnscrape-gateway
+    spec:
+      containers:
+        - name: gateway
+          image: {{ .Values.gateway.image }}:{{ .Values.gateway.tag }}
+          ports:
+            - containerPort: {{ .Values.gateway.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.gateway.port }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snapnscrape-gateway
+spec:
+  type: NodePort
+  selector:
+    app: snapnscrape-gateway
+  ports:
+    - port: {{ .Values.gateway.port }}
+      targetPort: {{ .Values.gateway.port }}
+      nodePort: {{ .Values.gateway.nodePort }}

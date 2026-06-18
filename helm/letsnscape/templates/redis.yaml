@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: letsnscape-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: letsnscape-redis
+  template:
+    metadata:
+      labels:
+        app: letsnscape-redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          args: ["redis-server", "--port", "{{ .Values.redis.port }}"]
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: letsnscape-redis
+spec:
+  selector:
+    app: letsnscape-redis
+  ports:
+    - port: {{ .Values.redis.port }}
+      targetPort: {{ .Values.redis.port }}

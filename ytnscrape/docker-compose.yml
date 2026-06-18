@@ -1,0 +1,189 @@
+x-common-env: &common-env
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  MINIO_ENDPOINT: minio:9000
+  MINIO_ACCESS_KEY: ytnscrape
+  MINIO_SECRET_KEY: ytnscrape123
+  MINIO_BUCKET: ytnscrape
+  LOG_LEVEL: INFO
+  PYTHONUNBUFFERED: "1"
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "3061:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ytnscrape
+      MINIO_ROOT_PASSWORD: ytnscrape123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set local http://minio:9000 ytnscrape ytnscrape123;
+        mc mb --ignore-existing local/ytnscrape;
+        mc anonymous set download local/ytnscrape;
+        echo 'MinIO bucket ready';
+      "
+
+  gateway:
+    image: pratham1uk/ytnscrape-gateway:v1.0.0
+    restart: unless-stopped
+    ports:
+      - "3082:8000"
+    environment:
+      <<: *common-env
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      retries: 5
+
+  svc-ingest:
+    image: pratham1uk/ytnscrape-svc-ingest:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "2"
+      FRAME_FPS: "${FRAME_FPS:-1}"
+      YTDLP_NO_UPDATE: "${YTDLP_NO_UPDATE:-0}"
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - tmp_frames:/tmp/frames
+
+  svc-dedup:
+    image: pratham1uk/ytnscrape-svc-dedup:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "${MAX_WORKERS:-4}"
+      PHASH_THRESHOLD: "${PHASH_THRESHOLD:-15}"
+      DEDUP_WINDOW: "${DEDUP_WINDOW:-30}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - tmp_frames:/tmp/frames
+
+  # svc-priority replaces svc-webcam + svc-semantic
+  # Classifies frames P1/P2/P3, deduplicates per tier, feeds postprocess
+  svc-priority:
+    image: pratham1uk/ytnscrape-svc-priority:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "${MAX_WORKERS:-4}"
+      SIMILARITY_THRESHOLD: "${SIMILARITY_THRESHOLD:-0.82}"
+      CLUSTER_WINDOW: "${CLUSTER_WINDOW:-60}"
+      EMBED_BATCH_SIZE: "${EMBED_BATCH_SIZE:-32}"
+      CODE_DIFF_THRESHOLD: "${CODE_DIFF_THRESHOLD:-30}"
+      OCR_WORKERS: "${OCR_WORKERS:-4}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - tmp_frames:/tmp/frames
+    # NOTE: GPU reservation removed — this EC2 instance has no GPU.
+    # svc-priority will run the embedding model on CPU automatically.
+
+  svc-postprocess:
+    image: pratham1uk/ytnscrape-svc-postprocess:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "${MAX_WORKERS:-4}"
+      OUTPUT_WIDTH: "${OUTPUT_WIDTH:-0}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - tmp_frames:/tmp/frames
+
+  svc-captions:
+    image: pratham1uk/ytnscrape-svc-captions:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "2"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - tmp_frames:/tmp/frames
+
+  svc-render-zip:
+    image: pratham1uk/ytnscrape-svc-render-zip:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "2"
+      RENDER_QUEUE: "q:render:zip"
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - tmp_frames:/tmp/frames
+
+  svc-render-pdf:
+    image: pratham1uk/ytnscrape-svc-render-pdf:v1.0.0
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      MAX_WORKERS: "2"
+      FRAMES_PER_PAGE: "${FRAMES_PER_PAGE:-2}"
+      NOTE_LINES: "${NOTE_LINES:-6}"
+      RENDER_QUEUE: "q:render:pdf"
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    volumes:
+      - tmp_frames:/tmp/frames
+
+  frontend:
+    image: pratham1uk/ytnscrape-frontend:v1.0.0
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+
+volumes:
+  redis_data:
+  minio_data:
+  tmp_frames:
