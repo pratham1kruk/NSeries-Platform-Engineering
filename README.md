@@ -57,7 +57,7 @@ The workloads deployed are not placeholder apps. They are original, independentl
 | `grafana-monitoring-dashboard-demo.mp4` | Grafana dashboard walkthrough |
 | `prometheus-monitoring-and-alerting-demo.mp4` | Prometheus alerts and rules |
 
-All videos in `assets/demo-video/`.
+### Demo videos are hosted externally because GitHub's repository size and file size limits are not suitable for high-resolution deployment recordings. Screenshots and reports remain available within the repository. where should i add this note
 
 ### Screenshots
 
@@ -183,13 +183,7 @@ NSeries-Platform-Engineering/
 ├── ytnscrape/
 │   └── docker-compose.yml     # Standalone deployment, separate EC2
 ├── assets/
-│   ├── demo-video/
-│   │   ├── Nseries-platform-complete-demo.mp4
-│   │   ├── letsNscrape-aws-ec2-kubernetes-deployment.mp4
-│   │   ├── snapNscrape-aws-ec2-kubernetes-deployment.mp4
-│   │   ├── ytNscrape-aws-ec2-kubernetes-deployment.mp4
-│   │   ├── grafana-monitoring-dashboard-demo.mp4
-│   │   └── prometheus-monitoring-and-alerting-demo.mp4
+│   ├── demo-links.md
 │   ├── images/
 │   │   ├── Nseries-ec2-deployment.png
 │   │   ├── kubernetes-master-node-helm-overview.png
