@@ -2,3 +2,4 @@ PERSONAL_DOCS.md
 .vbc/*
 .vbcignore
 join-command.sh
+*_c3_*
