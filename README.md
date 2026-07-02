@@ -12,6 +12,16 @@
 
 ---
 
+## Overview
+
+**End-to-end DevOps platform** deploying production microservices on **self-managed Kubernetes** (kubeadm — no EKS/GKE) across a 3-node **AWS EC2** cluster. Infrastructure is fully automated with **Ansible**, applications are packaged and released via **Helm**, and the cluster is observed with a **Prometheus + Grafana** monitoring/alerting stack.
+
+The workloads aren't demo apps — they're three **original, independently built and published Docker images** (13 images total, `pratham1uk` DockerHub namespace) from the author's own [NScrape Series](https://github.com/pratham1kruk/Nscrape_Series) of web scraping tools, showing both **infrastructure engineering** and **full-stack application development** in one project.
+
+**Core skills demonstrated:** `AWS EC2` · `Kubernetes (kubeadm)` · `Ansible` · `Helm` · `Docker` · `Docker Compose` · `Prometheus` · `Grafana` · `Calico CNI` · `GitHub Actions CI/CD` · `Infrastructure-as-Code` · `Production troubleshooting`
+
+---
+
 ## Architecture
 
 ```
@@ -57,7 +67,7 @@ The workloads deployed are not placeholder apps. They are original, independentl
 | `grafana-monitoring-dashboard-demo.mp4` | Grafana dashboard walkthrough |
 | `prometheus-monitoring-and-alerting-demo.mp4` | Prometheus alerts and rules |
 
-### Demo videos are hosted externally because GitHub's repository size and file size limits are not suitable for high-resolution deployment recordings. Screenshots and reports remain available within the repository. where should i add this note
+*Demo videos are hosted externally because GitHub's repository and file size limits aren't suitable for high-resolution deployment recordings. Screenshots and reports remain available within the repository.*
 
 ### Screenshots
 
