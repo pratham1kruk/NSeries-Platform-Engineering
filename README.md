@@ -102,6 +102,18 @@ This project uses those published images directly as the workload — demonstrat
 
 All 13 Docker images (across the three tools) are authored and maintained by Pratham Kumar Uikey at [hub.docker.com/u/pratham1uk](https://hub.docker.com/u/pratham1uk).
 
+## Want to Use These Tools Yourself?
+
+This repo demonstrates how these tools are **deployed and operated in production** — it is not where you go to run them.
+
+If you want to **download, set up, and run LetsNScrape, SnapNScrape, or ytNscrape** locally, refer to the **[Nscrape_Series](https://github.com/pratham1kruk/Nscrape_Series)** repo. It contains:
+
+- Docker Compose files for each tool
+- Full setup and configuration guides
+- Port, environment variable, and API documentation
+- Troubleshooting for local deployment
+
+**[→ Nscrape_Series — Tools, Setup & Documentation](https://github.com/pratham1kruk/Nscrape_Series)**
 ---
 
 ## Tech Stack
